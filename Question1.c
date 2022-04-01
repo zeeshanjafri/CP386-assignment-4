@@ -99,15 +99,25 @@ void *thread_handler(void *param){
 	return NULL;
 }
 
-int main(int argc,  char *argv[]){
-
-//	if(argc < 2){
-//			printf("No args");
-//			return 0;
-//		}
-
-
+int main(int argc,  char **argv){
 	int y,x,i;
+	if(argc < 2){
+			printf("No args");
+			return 0;
+		}
+	i = 1;
+	int avail[4];
+	while(i < argc){
+		if(isdigit(*argv[i])){
+			avail[i-1] = atoi(argv[i]);
+
+
+		i++;
+		}
+	}
+
+
+
 	int max_res[5][4] = {
 			{6, 4, 7, 3},
 			{4, 2, 3, 2},
@@ -117,11 +127,16 @@ int main(int argc,  char *argv[]){
 
 	int alloc[customers][resources];
 	int need[customers][resources];
-	int avail[4] = {10,5,7,8};
+
 
 
 	printf("Number of Customers: %d\n", customers);
-	printf("Currently Available resources:......\n");
+	printf("Currently Available resources: \n");
+
+	for(y = 0;y<resources;y++){
+		printf("%d ",avail[y]);
+	}
+	printf("\n");
 	printf("Maximum resources from file\n");
 
 	for (y = 0;y < customers;y++){
@@ -180,8 +195,7 @@ int main(int argc,  char *argv[]){
 			for (i= 0 ; i < resources;i++){
 				copy_need[i] = max_res[process][i]  - copy_alloc[i];
 			}
-//			needs(max_res,copy_alloc,need); //update need array
-//			safe = isSafe(max_res,alloc,need,avail,0); //Check if current state is safe
+
 			safe = findrequest(copy_need,avail,request);
 
 			if (safe == 1){
