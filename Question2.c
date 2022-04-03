@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pthread.h>
+#include <ctype.h>
 
 /* global variable declaration */
 int size = 1000000;  //get this as cmd line arg
@@ -126,14 +128,16 @@ int main(void) {
 
 	while (blocksize[i] != -1 && i < 1000) {
 
-		if (blocksize[i] > inputsize && blocksize[i] <= blocksize[bestblock]) {
-			bestblock = i;
+		if (blocksize[i] > inputsize) {
+			if(blocksize[i] > blocksize[bestblock])
+				bestblock = i;
 		}
 		i++;
 	}
 	//bestblock is index of block to use for best fit
 
 	printf("Bestblock: %d	\n", blocksize[bestblock]);
+	printf("Bestblock is between: %d and %d\n", blocklist[bestblock], blocklist[bestblock+1]);
 
 }
 
