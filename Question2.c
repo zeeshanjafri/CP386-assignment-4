@@ -5,6 +5,8 @@
 #include <pthread.h>
 #include <ctype.h>
 
+#define MAXP 1000
+
 /* global variable declaration */
 //int size = argv[0];  //get this as cmd line arg
 int blocksize[1000];  //will contain the sizes of different processes
@@ -15,90 +17,93 @@ struct Process {
 	int start;
 	int end;
 } Process;
+//check if a new process can fit in memory by:
+//create an array of processes
+//identify holes in memory by creating an array of holes and populate it.
+//loop thru array of processes.
 
+struct Memory {
+	int size;
+	int blocklist[1000]; 	// [startP0,endP0,startP0,endP0...]
+	int blocksize[1000];	// [sizeP0,sizeP0,sizeP1,sizeP1...]
+	int memory[1000000];	// [-1,-1,-1,-1,-1,1,1,1,1,1,1,1,1]
+} Memory;
 
+void init_memory(struct Memory *memory, int size) {
+	if (!memory) {
+		printf("invalid memory passed to create memory\nExiting..\n");
+		return;
+	}
+	int i = 0;
+	for (i = 0; i < size; i++) {  //initialize memory block with -1's
+		memory->memory[i] = -1;
+	}
+	memory->size = size;
+	printf("Allocated %d bytes of memory\n", size);
 
-//void allocate(char *process, int process_size) {
-//	int i = 0;
-//
-//	int max = 0;
-//	int count = 1;
-//
-//	for (i = 0; i < size; i++) { //loop through entire memory to find make list block sizes
-//		if (memory[i] == -1) {
-//			count++;
-//
-//		} else {
-//			if (count > max)
-//				max = count;
-//
-//		}
-//
-//	}
-//	printf("%d\n", count);
-//	printf("%d\n", max);
-//
-//	return;
-//}
+//	printf("\ndynamically allocated memory: %d\n",memory->memory[10000]);
+	return;
+}
 
-int main(int argc, char *argv[]) {
+struct Process* create_process(char *name, int size) {
+	struct Process *process;
+	process = malloc(sizeof(Process));
 
-	//test process
-	struct Process *p_test;
-	p_test = malloc(sizeof(Process));
+	process->name = name;
+	process->size = size;
+	/*	printf("Inside the creator function\n");
+	 printf("Process name: %s\n", process->name);
+	 printf("Process start: %d\n", process->start);
+	 printf("Process end: %d\n", process->end);
+	 printf("Process size: %d\n", process->size);
+	 printf("\n"); */
+//	printf("*Created Process*\n");
+	return process;
+}
 
-	p_test->name = "P0";
-	p_test->start = 10000;
-	p_test->end = 20000;
-	p_test->size = p_test->end-p_test->start;
-	printf("Process name: %s\n", p_test->name);
-	printf("Process start: %d\n", p_test->start);
-	printf("Process end: %d\n", p_test->end);
-	printf("Process size: %d\n", p_test->size);
+void print_process(struct Process *process) {
+	printf("Address [%d:%d] Process %s\n", process->start, process->end,
+			process->name);
+	return;
+}
 
-	int size = atoi(argv[1]);
-	int memory[size];
-
+void insert_plist(struct Process *processes[], struct Process *process) {
 	int i = 0;
 
-	for (i = 0; i < size; i++) {  //initialize memory block with -1's
-		memory[i] = -1;
+	while (i < MAXP) {
+
+		if (processes[i] == NULL) { //assign process to first NULL space in process list
+			processes[i] = process;
+		}
+		if (processes[i] == NULL)
+			break;
+		i++;
 	}
+}
 
-	for (i = 0; i < 1000; i++) {
-		blocksize[i] = -1;
-	}
-
-//	memory[100000] = 2;
-//	memory[200000] = 2;
-//	memory[300000] = 2;
-//	memory[700000] = 2;
-//	memory[800000] = 2;
-//	memory[900000] = 2;
-//	memory[1000000] = 2;
-
-	//create block list
-	//to have format Address [200000:549999] Process P1
-
-	int blocklist[1000]; //accessed 0-1 for each start-end //
+//checks the Process list for best-fitting hole
+//returns 0 or index
+int best_fit(struct Memory *memory, struct Process *process) {
+	printf("entered best fit\n");
+	//int memory->memory[1000]; //accessed 0-1 for each start-end //
 	int currsize = 0;
 	int currblockstart = 0;
 	int currblockend;
 
-	int j = 0; //for inserting into blocklist
-
-	for (i = 0; i < size + 1; i++) {
-		if (memory[i] == -1) {	//count contiguous -1's showing holes
+	int j = 0; //for inserting into memory
+	int i;
+	printf("Before the for loop...\n");
+	for (i = 0; i < memory->size +1 ; i++) {
+		if (memory->memory[i] == -1) {	//count contiguous -1's showing holes
 			currsize++;
-
 		}
-		if (memory[i] != -1) {//when encounter another process, mark size of previous block
+		if (memory->memory[i] != -1) {//when encounter another process, mark size of previous block
 			currblockend = i;
-			blocklist[j] = currblockstart;
-			blocklist[++j] = currblockend;
+			memory->blocklist[j] = currblockstart;
+			memory->blocklist[++j] = currblockend;
 
-			blocksize[j] = currsize; //block size corresponds with currblockend
-			blocksize[j - 1] = currsize; //block size corresponds with currblockend
+			memory->blocksize[j] = currsize; //block size corresponds with currblockend
+			memory->blocksize[j - 1] = currsize; //block size corresponds with currblockend
 
 			currsize = 0;
 			currblockstart = currblockend + 1;
@@ -107,59 +112,91 @@ int main(int argc, char *argv[]) {
 
 	} //have to get last block
 
-	printf("start		 1: %d\n", blocklist[0]);
-	printf("end                 %d\n", blocklist[1]);
-	printf("start 		 2: %d\n", blocklist[2]);
-	printf("end 		    %d\n", blocklist[3]);
-	printf("start		 3: %d\n", blocklist[4]);
-	printf("end 		    %d\n", blocklist[5]);
-	printf("start		 4: %d\n", blocklist[6]);
-	printf("end 		    %d\n", blocklist[7]);
-	printf("start 		 5: %d\n", blocklist[8]);
-	printf("end 		    %d\n", blocklist[9]);
-	printf("start 	     6: %d\n", blocklist[10]);
-	printf("end				%d\n", blocklist[11]);
-	printf("start		 7: %d\n", blocklist[12]);
-	printf("end			    %d\n", blocklist[13]);
-
-	printf("\nblocksize 0: %d\n", blocksize[0]);
-	printf("blocksize 1: %d\n", blocksize[1]);
-	printf("blocksize 2: %d\n", blocksize[2]);
-	printf("blocksize 3: %d\n", blocksize[3]);
-	printf("blocksize 4: %d\n", blocksize[4]);
-	printf("blocksize 5: %d\n", blocksize[5]);
-	printf("blocksize 6: %d\n", blocksize[6]);
-	printf("blocksize 7: %d\n", blocksize[7]);
-	printf("blocksize 8: %d\n", blocksize[8]);
-	printf("blocksize 9: %d\n", blocksize[9]);
-	printf("blocksize 10: %d\n", blocksize[10]);
-	printf("blocksize 11: %d\n", blocksize[11]);
-	printf("blocksize 12: %d\n", blocksize[12]);
-	printf("blocksize 13: %d\n", blocksize[13]);
-	printf("blocksize 14: %d\n", blocksize[14]);
-	printf("blocksize 15: %d\n", blocksize[15]);
-	printf("blocksize 16: %d\n", blocksize[16]);
-	printf("blocksize 17: %d\n", blocksize[17]);
-
 	//determine block for best fit
 
 	i = 0;
-	int inputsize = 200000;
+	//int inputsize = 200000;
 	int bestblock = 0;
+	int inputsize = process->size;
 
-	while (blocksize[i] != -1 && i < 1000) {
+	printf("I made it to this while loop\n");
+	while (memory->blocksize[i] != -1 && i < 1000) {
 
-		if (blocksize[i] > inputsize) {
-			if (blocksize[i] > blocksize[bestblock])
+		if (memory->blocksize[i] > inputsize) {
+			if (memory->blocksize[i] > memory->blocksize[bestblock])
 				bestblock = i;
 		}
 		i++;
 	}
+	printf("I survived this while loop\n");
 	//bestblock is index of block to use for best fit
 
-	printf("Bestblock: %d	\n", blocksize[bestblock]);
-	printf("Bestblock is between: %d and %d\n", blocklist[bestblock],
-			blocklist[bestblock + 1]);
+//	printf("Bestblock size: %d	\n", memory->blocksize[bestblock]);
+//	printf("Bestblock is between: %d and %d\n", memory->blocklist[bestblock],
+//			memory->blocklist[bestblock + 1]);
+
+	if (memory->blocksize[bestblock]) {
+		process->start = memory->blocklist[bestblock];
+		process->end = memory->blocklist[bestblock] + process->size;
+		int i = process->start;
+//		printf("Process->start: %d\n", process->start);
+//		printf("Process->end: %d\n", process->end);
+
+		printf("memory->memory[i]: %d\n", memory->memory[i]);
+		while (i < process->end) {		//write into memory for this process
+//			if (memory->memory[i] != -1)
+//				break;
+			memory->memory[i] = 1;
+			i++;
+		}
+		printf("Successfully allocated %d to process %s\n", process->size,
+				process->name); //goes in allocation function
+	}
+
+	return bestblock;
+}
+
+int main(int argc, char *argv[]) {
+
+	/*test process
+	 struct Process *p_test;
+	 p_test = malloc(sizeof(Process));
+
+	 /*	p_test->name = "P0";
+	 p_test->start = 10000;
+	 p_test->end = 20000;
+	 p_test->size = p_test->end - p_test->start;
+	 printf("Process name: %s\n", p_test->name);
+	 printf("Process start: %d\n", p_test->start);
+	 printf("Process end: %d\n", p_test->end);
+	 printf("Process size: %d\n", p_test->size);
+	 printf("\n");
+
+	 print_process(p_test); */		//Testing process creation
+	//test process creator
+//	char string_name[20] = "P1";
+//	int sizee = 10000;
+//	struct Process *p1 = create_process(string_name, sizee);
+//	printf("Printing Process:\n");
+//	print_process(p1);
+	int size = atoi(argv[1]);
+	int memory[size];
+
+	int i = 0;
+
+	//initialize the RAM to work with
+	struct Memory *mem;
+	mem = malloc(sizeof(Memory));
+	init_memory(mem, size);
+
+	//initial list of processes with all NULLs
+	struct Process *process_list[1000];
+	for (i = 0; i < 1000; i++) {  //initialize memory block with NULL's
+		process_list[i] = NULL;
+	}
+
+	//create block list
+	//to have format Address [200000:549999] Process P1
 
 	char input[40];
 	char str1[15];
@@ -186,33 +223,40 @@ int main(int argc, char *argv[]) {
 		char *arg3 = NULL;
 		char *arg4 = NULL;
 
-		if (pch != NULL) {
+		if (pch != NULL) { //extract args from successive input
 			arg1 = pch;
 			pch = strtok(NULL, " ,.-");
-			printf("%s\n", arg1);
+			//	printf("%s\n", arg1);
 			if (pch != NULL) {
 				arg2 = pch;
 				pch = strtok(NULL, " ");
-				printf("%s\n", arg2);
+				//	printf("%s\n", arg2);
 			}
 			if (pch != NULL) {
 				arg3 = pch;
 				pch = strtok(NULL, " ");
-				printf("%s\n", arg3);
+				//	printf("%s\n", arg3);
 			}
 			if (pch != NULL) {
 				arg4 = pch;
 				pch = strtok(NULL, " ");
-				printf("%s\n", arg4);
+				//	printf("%s\n", arg4);
 			}
 		} //grab 4 arguments from command line for requests
 
 		switch (strcmp(arg1, "RQ")) { //	printf("%d\n",strcmp(arg1,"RQ")); (to get switch case value)
 		case 0: /* Case of "RQ" */
-			printf("Successfully allocated ...\n");
-			printf("%s\n", arg1);
-			printf("%d\n", strcmp(arg1, "RQ"));
+		{
+			struct Process *p;
+			p = create_process(arg2, atoi(arg3));
+			insert_plist(process_list, p);
+			best_fit(mem, p);
+			print_process(p);
+//			printf("%s\n", arg1);
+//			printf("%d\n", strcmp(arg1, "RQ"));
+
 			break;
+		}
 		case -5: //Case of RL
 			printf("releasing memory for process\n");
 			break;
@@ -220,10 +264,21 @@ int main(int argc, char *argv[]) {
 			printf("Partitions [Allocated memory = .... ]\n");
 			break;
 		default: //invalid input
+		{
 			printf("The value is not correct\n");
+			int i = 0;
+			int j = 0;
+			while (i < 1000000) {
+				if (mem->memory[i] != -1) {
+					j++;
+				}
+				i++;
+			}
+			printf("j: %d\n", j);
 			printf("%s\n", arg1);
 			printf("%d\n", strcmp(arg1, "RQ"));
 			break;
+		}
 		}
 
 	}
