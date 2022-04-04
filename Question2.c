@@ -6,8 +6,17 @@
 #include <ctype.h>
 
 /* global variable declaration */
-int size = 1000000;  //get this as cmd line arg
+//int size = argv[0];  //get this as cmd line arg
 int blocksize[1000];  //will contain the sizes of different processes
+
+struct Process {
+	char *name;
+	int size;
+	int start;
+	int end;
+} Process;
+
+
 
 //void allocate(char *process, int process_size) {
 //	int i = 0;
@@ -32,8 +41,22 @@ int blocksize[1000];  //will contain the sizes of different processes
 //	return;
 //}
 
-int main(void) {
+int main(int argc, char *argv[]) {
 
+	//test process
+	struct Process *p_test;
+	p_test = malloc(sizeof(Process));
+
+	p_test->name = "P0";
+	p_test->start = 10000;
+	p_test->end = 20000;
+	p_test->size = p_test->end-p_test->start;
+	printf("Process name: %s\n", p_test->name);
+	printf("Process start: %d\n", p_test->start);
+	printf("Process end: %d\n", p_test->end);
+	printf("Process size: %d\n", p_test->size);
+
+	int size = atoi(argv[1]);
 	int memory[size];
 
 	int i = 0;
@@ -46,13 +69,13 @@ int main(void) {
 		blocksize[i] = -1;
 	}
 
-	memory[100000] = 2;
-	memory[200000] = 2;
-	memory[300000] = 2;
-	memory[700000] = 2;
-	memory[800000] = 2;
-	memory[900000] = 2;
-	memory[1000000] = 2;
+//	memory[100000] = 2;
+//	memory[200000] = 2;
+//	memory[300000] = 2;
+//	memory[700000] = 2;
+//	memory[800000] = 2;
+//	memory[900000] = 2;
+//	memory[1000000] = 2;
 
 	//create block list
 	//to have format Address [200000:549999] Process P1
@@ -99,7 +122,6 @@ int main(void) {
 	printf("start		 7: %d\n", blocklist[12]);
 	printf("end			    %d\n", blocklist[13]);
 
-
 	printf("\nblocksize 0: %d\n", blocksize[0]);
 	printf("blocksize 1: %d\n", blocksize[1]);
 	printf("blocksize 2: %d\n", blocksize[2]);
@@ -119,7 +141,6 @@ int main(void) {
 	printf("blocksize 16: %d\n", blocksize[16]);
 	printf("blocksize 17: %d\n", blocksize[17]);
 
-
 	//determine block for best fit
 
 	i = 0;
@@ -129,7 +150,7 @@ int main(void) {
 	while (blocksize[i] != -1 && i < 1000) {
 
 		if (blocksize[i] > inputsize) {
-			if(blocksize[i] > blocksize[bestblock])
+			if (blocksize[i] > blocksize[bestblock])
 				bestblock = i;
 		}
 		i++;
@@ -137,7 +158,75 @@ int main(void) {
 	//bestblock is index of block to use for best fit
 
 	printf("Bestblock: %d	\n", blocksize[bestblock]);
-	printf("Bestblock is between: %d and %d\n", blocklist[bestblock], blocklist[bestblock+1]);
+	printf("Bestblock is between: %d and %d\n", blocklist[bestblock],
+			blocklist[bestblock + 1]);
+
+	char input[40];
+	char str1[15];
+	strcpy(str1, "Exit");
+
+	char *token;
+
+	for (;;) /* input loop */
+	{
+		fputs("Command>", stdout);
+		fflush(stdout);
+		fgets(input, sizeof input, stdin);
+		if (strcmp(input, str1) == 10)
+			break;
+
+		char *pch;
+		pch = strtok(input, " ,.-");
+
+		//			printf("%s\n", pch);
+		//			pch = strtok(NULL, " ,.-");
+
+		char *arg1 = NULL;
+		char *arg2 = NULL;
+		char *arg3 = NULL;
+		char *arg4 = NULL;
+
+		if (pch != NULL) {
+			arg1 = pch;
+			pch = strtok(NULL, " ,.-");
+			printf("%s\n", arg1);
+			if (pch != NULL) {
+				arg2 = pch;
+				pch = strtok(NULL, " ");
+				printf("%s\n", arg2);
+			}
+			if (pch != NULL) {
+				arg3 = pch;
+				pch = strtok(NULL, " ");
+				printf("%s\n", arg3);
+			}
+			if (pch != NULL) {
+				arg4 = pch;
+				pch = strtok(NULL, " ");
+				printf("%s\n", arg4);
+			}
+		} //grab 4 arguments from command line for requests
+
+		switch (strcmp(arg1, "RQ")) { //	printf("%d\n",strcmp(arg1,"RQ")); (to get switch case value)
+		case 0: /* Case of "RQ" */
+			printf("Successfully allocated ...\n");
+			printf("%s\n", arg1);
+			printf("%d\n", strcmp(arg1, "RQ"));
+			break;
+		case -5: //Case of RL
+			printf("releasing memory for process\n");
+			break;
+		case 1: //Case of Status
+			printf("Partitions [Allocated memory = .... ]\n");
+			break;
+		default: //invalid input
+			printf("The value is not correct\n");
+			printf("%s\n", arg1);
+			printf("%d\n", strcmp(arg1, "RQ"));
+			break;
+		}
+
+	}
 
 }
 
