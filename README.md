@@ -6,7 +6,9 @@ MakeFile
 ----------------------------------------------------------------------------
 Contains commands to compile and run both files with their respective sample
 inputs.
-
+Change file names for q1 and q2 to Question1.c and Question2.c respectively
+Enter 'make runq1' to run and compile q1
+Enter 'make runq2' to run and compile q2
 
 Screenshots
 ----------------------------------------------------------------------------
