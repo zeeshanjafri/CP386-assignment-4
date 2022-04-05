@@ -178,6 +178,7 @@ int main(int argc,  char **argv){
 				process = atoi(&numbers[0]);
 
 				curr = 0;
+				if (process < customers){
 
 
 				for(i = 1; i < strlen(numbers);i++){
@@ -210,7 +211,7 @@ int main(int argc,  char **argv){
 				input[ strlen(input)-1] ='\0';
 				continue;
 
-
+				}
 
 
 				}else{
