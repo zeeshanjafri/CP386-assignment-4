@@ -49,7 +49,7 @@ void release_process(struct Process *processes[],
 					break;
 
 				} else if (processes[j]->start == process_full[i]->end + 1) {
-					printf("HERE");
+//					printf("HERE");
 					processes[j]->start = process_full[i]->start;
 					processes[j]->size = processes[j]->size
 							+ process_full[i]->size;
