@@ -54,6 +54,13 @@ have continuously pushed myself to refine my skills and excel in this field, whi
 is why I enjoy taking in projects such as this that give me the opportunity to hone
 my skills and become a better developer.Website link: https://arifportfolio.com/
 
+Zeeshan jafri: I am a fourth year computer science student at Wilfrid Laurier University. 
+I entered this field so I could have a deep technical understanding of computer software
+and its applications. This will enable me to be able to craft innovative solutions for the 
+problems of tomorrow. My dream is to be an entrepreneur in the tech industry, to start a 
+company that creates some industry disruption. In the past I have worked as an automation 
+developer, and am starting a DevOps internship at TD this summer. 
+
 License to use this code
 ----------------------------------------------------------------------------
 This is open-source and available for use to anyone.
