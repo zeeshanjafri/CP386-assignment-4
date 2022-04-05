@@ -21,7 +21,7 @@ Individual Contribution (Function Wise)
 ----------------------------------------------------------------------------
 Question1: Functions were done by Omogbolahan Arif Ashogbon.
 
-Question2: Functions were done collaboratively by Zeeshan Jafari and Omogbolahan Arif Ashogbon.
+Question2: Functions were done collaboratively by Zeeshan Jafri and Omogbolahan Arif Ashogbon.
 
 Features
 ----------------------------------------------------------------------------
