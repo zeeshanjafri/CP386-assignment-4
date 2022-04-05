@@ -8,8 +8,8 @@
 #define MAXP 100
 
 /* global variable declaration */
-//int size = argv[0];  //get this as cmd line arg
-int blocksize[1000];  //will contain the sizes of different processes
+
+
 int alloc;
 
 struct Process {
@@ -26,7 +26,7 @@ void print_process(struct Process *process) {
 }
 
 void release_process(struct Process *processes[],
-		struct Process *process_full[], char *process) {
+	struct Process *process_full[], char *process) {
 
 	for (int i = 0; i < MAXP; i++) {
 		if (process_full[i] != NULL
@@ -46,6 +46,7 @@ void release_process(struct Process *processes[],
 					printf("releasing memory for process %s\n", process);
 					printf("Successfully released memory for process %s.\n",
 							process);
+					return;
 					break;
 
 				} else if (processes[j]->start == process_full[i]->end + 1) {
@@ -59,13 +60,17 @@ void release_process(struct Process *processes[],
 					printf("releasing memory for process %s\n", process);
 					printf("Successfully released memory for process %s.\n",
 							process);
+					return;
 					break;
 				}
 			}
 			break;
 
 		}
+
+
 	}
+	printf("Process not found.\n");
 
 }
 
@@ -99,7 +104,7 @@ int insert_plist(struct Process *processes[], struct Process *process_full[],
 }
 
 //checks the Process list for best-fitting hole
-//returns 0 or index
+//returns -1 or index
 int best_fit(struct Process *processes[], int size) {
 	int i;
 	int bestFit = -1;
@@ -121,12 +126,11 @@ int best_fit(struct Process *processes[], int size) {
 int main(int argc, char *argv[]) {
 
 	int size = atoi(argv[1]);
-	//int memory[size];
 	printf("Allocated %d bytes of memory\n", size);
 
 	int i = 0;
 
-	//initialize the RAM to work with
+
 
 	//initial list of processes with all NULLs
 	struct Process *process_list[100];
@@ -150,7 +154,6 @@ int main(int argc, char *argv[]) {
 	char str1[15];
 	strcpy(str1, "Exit");
 
-//	char *token;
 
 	for (;;) /* input loop */
 	{
@@ -163,106 +166,96 @@ int main(int argc, char *argv[]) {
 		char *pch;
 		pch = strtok(input, " ,.-");
 
-		//			printf("%s\n", pch);
-		//			pch = strtok(NULL, " ,.-");
+
 
 		char *arg1 = NULL;
 		char *arg2 = NULL;
 		char *arg3 = NULL;
-//		char *arg4 = NULL;
+
 
 		if (pch != NULL) { //extract args from successive input
 			arg1 = pch;
 			pch = strtok(NULL, " ,.-");
-			//	printf("%s\n", arg1);
+
 			if (pch != NULL) {
 				arg2 = pch;
 				pch = strtok(NULL, " ");
 				arg2[2] = '\0';
 
+
 			}
 			if (pch != NULL) {
 				arg3 = pch;
 				pch = strtok(NULL, " ");
-//				printf("%s\n", arg3);
+
 			}
-//			if (pch != NULL) {
-//				arg4 = pch;
-//				pch = strtok(NULL, " ");
-//				//	printf("%s\n", arg4);
-//			}
-		} //grab 4 arguments from command line for requests
 
-		int case_ = (strcmp(arg1, "RQ")); //	printf("%d\n",strcmp(arg1,"RQ")); (to get switch case value)
-		if (case_ == 0) /* Case of "RQ" */
-		{
 
-			int index = best_fit(process_list, atoi(arg3));
-			if (index == -1) {
-				printf("No hole of sufficient size.\n");
-			} else {
+		} //grab 3 arguments from command line for requests
 
-				int check = 0;
 
-				if (check == 0) {
-					int empty = 1;
-					empty = insert_plist(process_list, process_full, arg2,
-							atoi(arg3), index);
-					if (empty == 0) {
-						printf("Successfully allocated %d to process %s.\n",
-								atoi(arg3), arg2);
-						alloc += atoi(arg3);
+
+
+				if (strcmp(arg1, "RQ")==0) /* Case of "RQ" */
+				{
+
+					int index = best_fit(process_list, atoi(arg3));
+					if (index == -1) {
+						printf("No hole of sufficient size.\n");
+					} else {
+
+						int check = 0;
+
+						if (check == 0) {
+							int empty = 1;
+							empty = insert_plist(process_list, process_full, arg2,
+									atoi(arg3), index);
+							if (empty == 0) {
+								printf("Successfully allocated %d to process %s.\n",
+										atoi(arg3), arg2);
+								alloc += atoi(arg3);
+							}
+
+						}
+
 					}
 
+
+				}else if (strcmp(arg1, "RL")==0) { //Case of RL
+
+					release_process(process_list, process_full, arg2);
+
+				}else if (strcmp(arg1, "Status\n")==0) { //Case of Status
+					printf("Partitions [Allocated memory = %d]\n", alloc);
+
+					for (int i = 0; i < MAXP; i++) {
+						if (process_full[i] != NULL) {
+							printf("Address [%d:%d] Process %s\n",
+									process_full[i]->start, process_full[i]->end,
+									process_full[i]->name);
+						}
+					}
+
+					printf("\nHoles [Free memory = %d]:\n", size - alloc);
+
+					for (int i = 0; i < MAXP; i++) {
+						if (process_list[i] != NULL) {
+							printf("Address [%d:%d] len = %d\n", process_list[i]->start,
+									process_list[i]->end, process_list[i]->size);
+						}
+					}
+
+				}else if(strcmp(arg1, "EXIT\n")==0){
+					printf("Exiting.....\n");
+					return 0;
+				}else{
+					//invalid input
+					printf("Invalid input\n");
 				}
 
-			}
 
-			//break;
-		}
-		if (case_ == -5) { //Case of RL
-			release_process(process_list, process_full, arg2);
-
-		//	break;
-		}
-		if (case_ == 1) { //Case of Status
-			printf("Partitions [Allocated memory = %d]\n", alloc);
-
-			for (int i = 0; i < MAXP; i++) {
-				if (process_full[i] != NULL) {
-					printf("Address [%d:%d] Process %s\n",
-							process_full[i]->start, process_full[i]->end,
-							process_full[i]->name);
-				}
-			}
-
-			printf("\nHoles [Free memory = %d]:\n", size - alloc);
-
-			for (int i = 0; i < MAXP; i++) {
-				if (process_list[i] != NULL) {
-					printf("Address [%d:%d] len = %d\n", process_list[i]->start,
-							process_list[i]->end, process_list[i]->size);
-				}
-			}
-			//break;
-		}
-		//invalid input
-		if (case_ != 0 && case_ != 1 && case_ != -5) {
-			printf("The value is not correct\n");
-//			int i = 0;
-//			int j = 0;
-//			while (i < 1000000) {
-//				if (mem->memory[i] != -1) {
-//					j++;
-//				}
-//				i++;
-//			}
-//			printf("j: %d\n", j);
-//			printf("%s\n", arg1);
-//			printf("%d\n", strcmp(arg1, "RQ"));
-			//break;
 		}
 
 	}
 
-}
+
